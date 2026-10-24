@@ -13,8 +13,14 @@ import (
 )
 
 var (
+	// ErrUnsupportedDataType is returned by MarshallCommand for a data value
+	// that is not a byte, int, uint16 or uint32.
 	ErrUnsupportedDataType     = errors.New("unsupported data type")
+	// ErrCommandResponseNotFound is returned by UnmarshallCommand when no
+	// line holds a reply.
 	ErrCommandResponseNotFound = errors.New("command response not found")
+	// ErrCommandFailed is wrapped by the error returned when the hub answers
+	// with a status code other than StatusOk.
 	ErrCommandFailed           = errors.New("command failed")
 )
 
@@ -29,6 +35,9 @@ func marshalMultiLenUint[T constraints.Integer](value T) string {
 	}
 }
 
+// MarshallCommand builds a request line. Each data value is a byte, int,
+// uint16 or uint32. A byte is written as one byte. The others are written
+// as 1, 2 or 4 bytes, the fewest that hold the value.
 func MarshallCommand(command Command, dataType DataType, data ...any) (string, error) {
 
 	switch len(data) {
@@ -72,11 +81,18 @@ func MarshallCommand(command Command, dataType DataType, data ...any) (string, e
 
 var respRegexp = regexp.MustCompile(`(?i)^<([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{4})([0-9a-f]+)$`)
 
+// Decoded reply payloads.
 type (
+	// DataList is the payload of a DataSingleValue or DataMultipleValue
+	// reply.
 	DataList = []uint8
+	// DataMap is the payload of a DataKeyValuePair reply.
 	DataMap  = map[uint8]uint8
 )
 
+// UnmarshallCommand decodes the first line of resp that holds a reply. The
+// type of data follows dataType: nil for DataFirst and DataNone, DataList,
+// DataMap, or StatusCode for DataStatusCode.
 func UnmarshallCommand(resp []string) (command Command, dataType DataType, data any, err error) {
 	for _, line := range resp {
 		if m := respRegexp.FindStringSubmatch(line); m != nil {

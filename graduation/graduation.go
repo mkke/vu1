@@ -7,8 +7,13 @@ import (
 	"github.com/fogleman/gg"
 )
 
+// Graduation describes a dial's needle geometry and the styles a scale is
+// drawn with.
 type Graduation struct {
-	MechAngle  float64
+	// MechAngle is the needle's full sweep in radians.
+	MechAngle float64
+	// MechShiftY is the vertical position of the needle pivot as a fraction
+	// of the image height, measured up from the bottom edge.
 	MechShiftY float64
 
 	ArcColor color.Color
@@ -39,6 +44,8 @@ func (g *Graduation) ToXY(height, angle float64) (x, y float64) {
 	return x, y
 }
 
+// ToMechAngle converts a scale position from 0 to 1 to the needle angle in
+// radians, 0 being straight up.
 func (g *Graduation) ToMechAngle(angle float64) float64 {
 	return angle*g.MechAngle - g.MechAngle/2.0
 }
@@ -181,6 +188,8 @@ func (g *Graduation) LogFullTicks(dc *gg.Context, height, decades, lenL, lenM, l
 	dc.Pop()
 }
 
+// FullLabel calls drawLabelFn once per point, with the context moved to the
+// point at height and rotated to the needle angle there.
 func (g *Graduation) FullLabel(dc *gg.Context, height, points int, drawLabelFn func(dc *gg.Context, idx int)) {
 	g.pushCoordinateSystem(dc)
 	dc.SetColor(g.LabelColor)

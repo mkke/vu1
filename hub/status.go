@@ -5,6 +5,8 @@ import "fmt"
 // StatusCode represents a hub status code
 type StatusCode uint16
 
+// Status codes the hub replies with. The StatusBTL codes come from the
+// bootloader.
 const (
 	StatusOk                StatusCode = 0x0000
 	StatusFail              StatusCode = 0x0001

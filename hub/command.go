@@ -2,8 +2,11 @@ package hub
 
 import "fmt"
 
+// Command is the command byte of a request or reply.
 type Command byte
 
+// Commands understood by the hub. The DialBTL and HubBTL commands drive the
+// bootloaders used for firmware updates.
 const (
 	CmdSetDialRawSingle         Command = 0x01
 	CmdSetDialRawMultiple       Command = 0x02

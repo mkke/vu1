@@ -2,8 +2,11 @@ package hub
 
 import "fmt"
 
+// DataType says how the payload of a request or reply is laid out.
 type DataType byte
 
+// Payload layouts. DataMultipleKeyValue has the same value as
+// DataKeyValuePair.
 const (
 	DataFirst            DataType = 0x00
 	DataNone             DataType = 0x01

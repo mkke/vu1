@@ -6,6 +6,7 @@ import (
 	"github.com/fogleman/gg"
 )
 
+// VU1 is the geometry and line style for a VU-1 dial.
 var VU1 = Graduation{
 	MechAngle:     gg.Radians(75),
 	MechShiftY:    -.6,

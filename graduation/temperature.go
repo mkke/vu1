@@ -9,11 +9,20 @@ import (
 	"golang.org/x/image/font"
 )
 
+// Sector marks segment SegmentIndex of NumSegments equal segments of the
+// scale, such as the last eighth for a warning range.
 type Sector struct {
 	SegmentIndex int
 	NumSegments  int
 }
 
+// TemperatureGraduation is a linear scale from LowTemp to HighTemp with a
+// tick every Step. Every int(5/Step)-th tick is large and every
+// int(1/Step)-th medium. A Step of 2.5 gives a large tick every 5 degrees.
+// A Step above 5 gives small ticks only. Large ticks are
+// labelled with FontFaceL and the others with FontFaceM. Height is the arc's
+// distance from the pivot, and LenL, LenM and LenS are the tick lengths in
+// pixels.
 type TemperatureGraduation struct {
 	Graduation
 	FontFaceL         font.Face

@@ -8,13 +8,18 @@ import (
 	"github.com/fogleman/gg"
 )
 
+// Size of a dial's display in pixels.
 const (
 	DialImageWidth  = 200
 	DialImageHeight = 144
 )
 
+// ErrInvalidImageDimensions is returned for an image that is not exactly
+// DialImageWidth by DialImageHeight pixels.
 var ErrInvalidImageDimensions = fmt.Errorf("invalid image dimensions, expected %dx%d", DialImageWidth, DialImageHeight)
 
+// ConvertImageData packs sourceImage into the display's 1-bit format,
+// described in the package documentation.
 func ConvertImageData(sourceImage image.Image) ([]byte, error) {
 	bounds := sourceImage.Bounds()
 	if bounds.Dx() != DialImageWidth || bounds.Dy() != DialImageHeight {

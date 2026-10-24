@@ -12,6 +12,8 @@ import (
 	bugserial "go.bug.st/serial"
 )
 
+// SerialConn is a Conn over a serial port. See the package documentation
+// for its timing and concurrency behaviour.
 type SerialConn struct {
 	port     bugserial.Port
 	lock     sync.Mutex
@@ -20,6 +22,8 @@ type SerialConn struct {
 	lastRecv time.Time
 }
 
+// NewSerialConn discards anything buffered on port, sets its read timeout to
+// 500 ms and returns a Conn that owns it.
 func NewSerialConn(port bugserial.Port) (Conn, error) {
 	if err := port.ResetInputBuffer(); err != nil {
 		return nil, err
@@ -35,6 +39,7 @@ func NewSerialConn(port bugserial.Port) (Conn, error) {
 	return c, nil
 }
 
+// Close closes the port. Calls after the first return nil.
 func (c *SerialConn) Close() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -108,6 +113,7 @@ func (c *SerialConn) recv(ctx context.Context) ([]string, error) {
 	return resp, context.Cause(ctx)
 }
 
+// Send writes req followed by CR LF and waits until the port has sent it.
 func (c *SerialConn) Send(ctx context.Context, req string) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -119,6 +125,8 @@ func (c *SerialConn) Send(ctx context.Context, req string) error {
 	return c.send(ctx, req)
 }
 
+// SendAndRecv writes req and reads the reply lines, giving up after 5
+// seconds.
 func (c *SerialConn) SendAndRecv(ctx context.Context, req string) (resp []string, err error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
