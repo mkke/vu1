@@ -210,7 +210,10 @@ func (d *Dial) DisplayShow(ctx context.Context) error {
 }
 
 // SetBacklight sets the backlight's red, green, blue and white channels,
-// each from 0 to 255.
+// each from 0 to 100. The firmware lights a value above 100 as 100, and
+// Streacom's VU-Server clamps every channel to that range. The white
+// channel lights nothing on the dials tried, so a white backlight is
+// mixed from red, green and blue.
 func (d *Dial) SetBacklight(ctx context.Context, red, green, blue, white uint8) error {
 	return d.hub.sendCommand(ctx, CmdSetRGBBacklight, DataMultipleValue, d.dialIndex, red, green, blue, white)
 }
