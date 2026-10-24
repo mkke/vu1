@@ -57,6 +57,8 @@ func (c Command) String() string {
 		return "SetDialRawMultiple"
 	case CmdSetDialPercSingle:
 		return "SetDialPercSingle"
+	case CmdSetDialPercMultiple:
+		return "SetDialPercMultiple"
 	case CmdSetDialCalibrateMax:
 		return "SetDialCalibrateMax"
 	case CmdSetDialCalibrateHalf:
@@ -67,6 +69,8 @@ func (c Command) String() string {
 		return "ProvisionDevice"
 	case CmdResetAllDevices:
 		return "ResetAllDevices"
+	case CmdDialPower:
+		return "DialPower"
 	case CmdGetDeviceUid:
 		return "GetDeviceUid"
 	case CmdRescanBus:
@@ -97,6 +101,12 @@ func (c Command) String() string {
 		return "GetEasingConfig"
 	case CmdGetBuildInfo:
 		return "GetBuildInfo"
+	case CmdGetFwInfo:
+		return "GetFwInfo"
+	case CmdGetHwInfo:
+		return "GetHwInfo"
+	case CmdGetProtocolInfo:
+		return "GetProtocolInfo"
 	case CmdDebugI2CScan:
 		return "DebugI2CScan"
 	case CmdHubBTLJumpToBootloader:
@@ -120,6 +130,6 @@ func (c Command) String() string {
 	case CmdDialBTLReadLastStatus:
 		return "DialBTLReadLastStatus"
 	default:
-		return fmt.Sprintf("command<%02x>)", byte(c))
+		return fmt.Sprintf("command<%02x>", byte(c))
 	}
 }

@@ -19,6 +19,9 @@ var (
 	// ErrCommandResponseNotFound is returned by UnmarshallCommand when no
 	// line holds a reply.
 	ErrCommandResponseNotFound = errors.New("command response not found")
+	// ErrResponseTooShort is returned by UnmarshallCommand when a reply
+	// holds fewer data bytes than its length field announces.
+	ErrResponseTooShort        = errors.New("response shorter than its length field")
 	// ErrCommandFailed is wrapped by the error returned when the hub answers
 	// with a status code other than StatusOk.
 	ErrCommandFailed           = errors.New("command failed")
@@ -100,6 +103,10 @@ func UnmarshallCommand(resp []string) (command Command, dataType DataType, data 
 			dataTypeValue, _ := strconv.ParseUint(m[2], 16, 32)
 			dataLenValue, _ := strconv.ParseUint(m[3], 16, 32)
 			lineData := m[4]
+			if uint64(len(lineData)) < dataLenValue*2 {
+				return 0, 0, nil, fmt.Errorf("%w: %d data bytes announced, %d hex digits present",
+					ErrResponseTooShort, dataLenValue, len(lineData))
+			}
 
 			switch DataType(dataTypeValue) {
 			case DataFirst, DataNone:
@@ -115,9 +122,9 @@ func UnmarshallCommand(resp []string) (command Command, dataType DataType, data 
 			case DataKeyValuePair /* same id as DataMultipleKeyValue */ :
 				dataMap := make(DataMap, dataLenValue/2)
 				for i := range dataLenValue / 2 {
-					keyHexValue := lineData[i*2 : (i+1)*2]
+					keyHexValue := lineData[i*4 : i*4+2]
 					keyValue, _ := strconv.ParseUint(keyHexValue, 16, 32)
-					dataHexValue := lineData[(i+2)*2 : (i+3)*2]
+					dataHexValue := lineData[i*4+2 : i*4+4]
 					dataValue, _ := strconv.ParseUint(dataHexValue, 16, 32)
 					dataMap[uint8(keyValue)] = uint8(dataValue)
 				}
