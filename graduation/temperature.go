@@ -1,10 +1,6 @@
 package graduation
 
 import (
-	"fmt"
-	"math"
-	"strings"
-
 	"github.com/fogleman/gg"
 	"golang.org/x/image/font"
 )
@@ -34,32 +30,30 @@ type TemperatureGraduation struct {
 	Sectors           []Sector
 }
 
-// Draw draws a temperature graduation.
-func (tg TemperatureGraduation) Draw(dc *gg.Context) {
-	ticks := int(math.Ceil((tg.HighTemp-tg.LowTemp)/tg.Step)) + 1
-	tg.FullArc(dc, tg.Height, ticks)
-
-	for _, sector := range tg.Sectors {
-		tg.Sector(dc, tg.Height, ticks, tg.LenM, sector.SegmentIndex, sector.NumSegments)
+// Draw draws a temperature graduation through ScaleGraduation, and returns
+// its error for a scale it cannot draw.
+func (tg TemperatureGraduation) Draw(dc *gg.Context) error {
+	s := ScaleGraduation{
+		Graduation: tg.Graduation,
+		FontFaceL:  tg.FontFaceL,
+		FontFaceM:  tg.FontFaceM,
+		Height:     tg.Height,
+		Min:        tg.LowTemp,
+		Max:        tg.HighTemp,
+		Step:       tg.Step,
+		Ticks:      TickIntervals{IntervalL: int(5.0 / tg.Step), IntervalM: int(1.0 / tg.Step)},
+		LabelMinor: true,
+		LenL:       tg.LenL,
+		LenM:       tg.LenM,
+		LenS:       tg.LenS,
 	}
-
-	ti := TickIntervals{IntervalL: int(5.0 / tg.Step), IntervalM: int(1.0 / tg.Step)}
-	tg.FullTicks(dc, tg.Height, ticks, tg.LenL, tg.LenM, tg.LenS, ti.IntervalL, ti.IntervalM)
-
-	tg.FullLabel(dc, int(float64(tg.Height)*1.2), ticks, func(dc *gg.Context, idx int) {
-		temp := tg.LowTemp + float64(idx)*tg.Step
-
-		switch ti.TypeForIndex(idx) {
-		case TickL:
-			dc.SetFontFace(tg.FontFaceL)
-		default:
-			dc.SetFontFace(tg.FontFaceM)
+	if tg.Step > 0 {
+		span := s.top() - s.Min
+		for _, sector := range tg.Sectors {
+			from := float64(sector.SegmentIndex) / float64(sector.NumSegments)
+			to := float64(sector.SegmentIndex+1) / float64(sector.NumSegments)
+			s.Marked = append(s.Marked, Range{From: s.Min + from*span, To: s.Min + to*span})
 		}
-
-		text := fmt.Sprintf("%f", temp)
-		text = strings.TrimRight(text, "0")
-		text, _ = strings.CutSuffix(text, ".")
-
-		dc.DrawStringAnchored(text, 0, 0, 0.5, 0.5)
-	})
+	}
+	return s.Draw(dc)
 }

@@ -15,8 +15,10 @@
 // tick positions from 0 to 1, both ends included. TickIntervals decides
 // which of them get a large, medium or small tick.
 //
-// TemperatureGraduation combines the pieces into a complete scale from
-// LowTemp to HighTemp:
+// ScaleGraduation combines the pieces into a complete scale from Min to
+// Max, linear or logarithmic, with marked ranges drawn as sectors. Its
+// Fraction maps a value to the needle position. TemperatureGraduation is
+// a ScaleGraduation set up for temperatures from LowTemp to HighTemp:
 //
 //	img, err := hub.DrawImage(func(dc *gg.Context) error {
 //		graduation.TemperatureGraduation{

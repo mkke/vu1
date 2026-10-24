@@ -51,10 +51,16 @@ func (g *Graduation) ToMechAngle(angle float64) float64 {
 }
 
 func (g *Graduation) drawPartArc(dc *gg.Context, height, points int, segmentIdx, numSegments int, clockwise bool) {
-	startAngle := float64(segmentIdx) / float64(numSegments)
+	from := float64(segmentIdx) / float64(numSegments)
+	to := float64(segmentIdx+1) / float64(numSegments)
+	g.drawArcRange(dc, height, points, from, to, clockwise)
+}
 
+// drawArcRange adds an arc at height from scale position from to scale
+// position to, both between 0 and 1, to the current path.
+func (g *Graduation) drawArcRange(dc *gg.Context, height, points int, from, to float64, clockwise bool) {
 	drawPoint := func(idx, points int) {
-		x, y := g.ToXY(float64(height), startAngle+float64(idx)/(float64(numSegments)*float64(points-1)))
+		x, y := g.ToXY(float64(height), from+(to-from)*float64(idx)/float64(points-1))
 
 		if _, hasCurrent := dc.GetCurrentPoint(); !hasCurrent {
 			dc.MoveTo(x, y)
@@ -103,15 +109,24 @@ func (g *Graduation) PartArc(dc *gg.Context, height, points int, segmentIdx, num
 
 // Sector draws a sector
 func (g *Graduation) Sector(dc *gg.Context, height, points, lift int, segmentIdx, numSegments int) {
+	from := float64(segmentIdx) / float64(numSegments)
+	to := float64(segmentIdx+1) / float64(numSegments)
+	g.SectorRange(dc, height, points, lift, from, to)
+}
+
+// SectorRange draws the outline of a band lift pixels deep above the arc
+// at height, from scale position from to scale position to, both between
+// 0 and 1.
+func (g *Graduation) SectorRange(dc *gg.Context, height, points, lift int, from, to float64) {
 	g.pushCoordinateSystem(dc)
 	dc.SetColor(g.ArcColor)
 	dc.SetLineWidth(g.ArcWidth)
 	dc.SetLineCapRound()
 
 	// bottom arc
-	g.drawPartArc(dc, height, points, segmentIdx, numSegments, true)
+	g.drawArcRange(dc, height, points, from, to, true)
 	// top arc
-	g.drawPartArc(dc, height+lift, points, segmentIdx, numSegments, false)
+	g.drawArcRange(dc, height+lift, points, from, to, false)
 	dc.ClosePath()
 
 	dc.Stroke()
