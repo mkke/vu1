@@ -32,8 +32,9 @@ type Range struct {
 // LabelMinor do not apply.
 //
 // Height is the arc's distance from the pivot, and LenL, LenM and LenS
-// are the tick lengths in pixels. Each Marked range is drawn as a sector
-// LenM deep above the arc.
+// are the tick lengths in pixels. Each Marked range is drawn as the
+// outline of a sector LenM deep above the arc, and each Filled range as
+// the same sector filled.
 type ScaleGraduation struct {
 	Graduation
 	FontFaceL, FontFaceM font.Face
@@ -45,6 +46,7 @@ type ScaleGraduation struct {
 	LabelMinor           bool
 	LenL, LenM, LenS     int
 	Marked               []Range
+	Filled               []Range
 }
 
 // Fraction returns where v sits on the scale: 0 at Min, 1 at the end of
@@ -89,7 +91,8 @@ func (s ScaleGraduation) validate() error {
 	return nil
 }
 
-// Draw draws the arc, the marked sectors, the ticks and the labels.
+// Draw draws the arc, the marked and filled sectors, the ticks and the
+// labels.
 func (s ScaleGraduation) Draw(dc *gg.Context) error {
 	if err := s.validate(); err != nil {
 		return err
@@ -102,6 +105,9 @@ func (s ScaleGraduation) Draw(dc *gg.Context) error {
 	s.FullArc(dc, s.Height, points)
 	for _, r := range s.Marked {
 		s.SectorRange(dc, s.Height, points, s.LenM, s.Fraction(r.From), s.Fraction(r.To))
+	}
+	for _, r := range s.Filled {
+		s.FilledSectorRange(dc, s.Height, points, s.LenM, s.Fraction(r.From), s.Fraction(r.To))
 	}
 
 	labelHeight := int(float64(s.Height) * 1.2)

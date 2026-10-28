@@ -119,18 +119,32 @@ func (g *Graduation) Sector(dc *gg.Context, height, points, lift int, segmentIdx
 // 0 and 1.
 func (g *Graduation) SectorRange(dc *gg.Context, height, points, lift int, from, to float64) {
 	g.pushCoordinateSystem(dc)
+	g.sectorPath(dc, height, points, lift, from, to)
+	dc.Stroke()
+	dc.Pop()
+}
+
+// FilledSectorRange draws the band SectorRange outlines, filled with
+// ArcColor.
+func (g *Graduation) FilledSectorRange(dc *gg.Context, height, points, lift int, from, to float64) {
+	g.pushCoordinateSystem(dc)
+	g.sectorPath(dc, height, points, lift, from, to)
+	dc.FillPreserve()
+	dc.Stroke()
+	dc.Pop()
+}
+
+// sectorPath sets the arc style and adds the closed outline of a band to
+// the current path: out along the arc at height, back along the arc at
+// height+lift.
+func (g *Graduation) sectorPath(dc *gg.Context, height, points, lift int, from, to float64) {
 	dc.SetColor(g.ArcColor)
 	dc.SetLineWidth(g.ArcWidth)
 	dc.SetLineCapRound()
 
-	// bottom arc
 	g.drawArcRange(dc, height, points, from, to, true)
-	// top arc
 	g.drawArcRange(dc, height+lift, points, from, to, false)
 	dc.ClosePath()
-
-	dc.Stroke()
-	dc.Pop()
 }
 
 // FullTicks draws major, semi and minor ticks

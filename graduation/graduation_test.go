@@ -64,6 +64,41 @@ func drawBasicAngle(dc *gg.Context) {
 	drawAngle(1, 1)
 }
 
+func TestFilledSectorRangeFillsTheBand(t *testing.T) {
+	const lift = 20
+	const height = testHeight * 3 / 5
+
+	// bandCentre is the pixel halfway up the band at mid-scale.
+	bandCentre := func(dc *gg.Context) (int, int) {
+		VU1.pushCoordinateSystem(dc)
+		defer dc.Pop()
+		x, y := dc.TransformPoint(VU1.ToXY(float64(height)+lift/2, 0.5))
+		return int(x), int(y)
+	}
+
+	for name, tc := range map[string]struct {
+		draw     func(g *Graduation, dc *gg.Context, height, points, lift int, from, to float64)
+		wantInk bool
+	}{
+		"filled":   {(*Graduation).FilledSectorRange, true},
+		"outlined": {(*Graduation).SectorRange, false},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dc := gg.NewContext(testWidth, testHeight)
+			dc.SetColor(color.White)
+			dc.Clear()
+			g := VU1
+			tc.draw(&g, dc, height, 10, lift, 0.4, 0.6)
+
+			x, y := bandCentre(dc)
+			r, _, _, _ := dc.Image().At(x, y).RGBA()
+			if inked := r < 0x8000; inked != tc.wantInk {
+				t.Errorf("pixel (%d, %d) inked = %t, want %t", x, y, inked, tc.wantInk)
+			}
+		})
+	}
+}
+
 func TestToXY(t *testing.T) {
 	if err := drawPNG("TestToXY.png", "TestToXY", func(dc *gg.Context) error {
 		drawBasicAngle(dc)
