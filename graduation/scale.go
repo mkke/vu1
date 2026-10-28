@@ -14,9 +14,12 @@ import (
 // cannot draw.
 var ErrInvalidScale = errors.New("invalid scale")
 
-// Range is a stretch of a scale, in the scale's own unit.
-type Range struct {
-	From, To float64
+// Mark is a stretch of a scale from Min to Max, in the scale's own unit,
+// drawn as a band above the arc. A Filled mark is drawn filled, the others
+// as an outline.
+type Mark struct {
+	Min, Max float64
+	Filled   bool
 }
 
 // ScaleGraduation is a scale from Min to Max, linear or logarithmic.
@@ -32,9 +35,8 @@ type Range struct {
 // LabelMinor do not apply.
 //
 // Height is the arc's distance from the pivot, and LenL, LenM and LenS
-// are the tick lengths in pixels. Each Marked range is drawn as the
-// outline of a sector LenM deep above the arc, and each Filled range as
-// the same sector filled.
+// are the tick lengths in pixels. Each of Marks is drawn as a sector LenM
+// deep above the arc, in list order.
 type ScaleGraduation struct {
 	Graduation
 	FontFaceL, FontFaceM font.Face
@@ -45,8 +47,7 @@ type ScaleGraduation struct {
 	Ticks                TickIntervals
 	LabelMinor           bool
 	LenL, LenM, LenS     int
-	Marked               []Range
-	Filled               []Range
+	Marks                []Mark
 }
 
 // Fraction returns where v sits on the scale: 0 at Min, 1 at the end of
@@ -91,8 +92,7 @@ func (s ScaleGraduation) validate() error {
 	return nil
 }
 
-// Draw draws the arc, the marked and filled sectors, the ticks and the
-// labels.
+// Draw draws the arc, the marks, the ticks and the labels.
 func (s ScaleGraduation) Draw(dc *gg.Context) error {
 	if err := s.validate(); err != nil {
 		return err
@@ -103,11 +103,12 @@ func (s ScaleGraduation) Draw(dc *gg.Context) error {
 		points = s.decades() * 10
 	}
 	s.FullArc(dc, s.Height, points)
-	for _, r := range s.Marked {
-		s.SectorRange(dc, s.Height, points, s.LenM, s.Fraction(r.From), s.Fraction(r.To))
-	}
-	for _, r := range s.Filled {
-		s.FilledSectorRange(dc, s.Height, points, s.LenM, s.Fraction(r.From), s.Fraction(r.To))
+	for _, m := range s.Marks {
+		draw := s.SectorRange
+		if m.Filled {
+			draw = s.FilledSectorRange
+		}
+		draw(dc, s.Height, points, s.LenM, s.Fraction(m.Min), s.Fraction(m.Max))
 	}
 
 	labelHeight := int(float64(s.Height) * 1.2)

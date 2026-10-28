@@ -63,8 +63,7 @@ func TestScaleGraduationDraws(t *testing.T) {
 	linear := base
 	linear.Min, linear.Max, linear.Step = 0, 100, 10
 	linear.Ticks = TickIntervals{IntervalL: 5, IntervalM: 1}
-	linear.Marked = []Range{{From: 80, To: 100}}
-	linear.Filled = []Range{{From: 95, To: 100}}
+	linear.Marks = []Mark{{Min: 80, Max: 100}, {Min: 95, Max: 100, Filled: true}}
 
 	log := base
 	log.Min, log.Max, log.Log = 1, 1000, true

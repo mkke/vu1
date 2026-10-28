@@ -52,7 +52,7 @@ func (tg TemperatureGraduation) Draw(dc *gg.Context) error {
 		for _, sector := range tg.Sectors {
 			from := float64(sector.SegmentIndex) / float64(sector.NumSegments)
 			to := float64(sector.SegmentIndex+1) / float64(sector.NumSegments)
-			s.Marked = append(s.Marked, Range{From: s.Min + from*span, To: s.Min + to*span})
+			s.Marks = append(s.Marks, Mark{Min: s.Min + from*span, Max: s.Min + to*span})
 		}
 	}
 	return s.Draw(dc)
